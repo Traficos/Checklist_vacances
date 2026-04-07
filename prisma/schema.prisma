@@ -1,0 +1,44 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Checklist {
+  id          String     @id @default(uuid()) @db.Uuid
+  title       String     @db.VarChar(255)
+  description String?
+  shareToken  String     @unique @map("share_token") @db.VarChar(64)
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+  categories  Category[]
+
+  @@map("checklists")
+}
+
+model Category {
+  id          String    @id @default(uuid()) @db.Uuid
+  checklistId String    @map("checklist_id") @db.Uuid
+  name        String    @db.VarChar(255)
+  icon        String?   @db.VarChar(50)
+  position    Int       @default(0)
+  checklist   Checklist @relation(fields: [checklistId], references: [id], onDelete: Cascade)
+  items       Item[]
+
+  @@map("categories")
+}
+
+model Item {
+  id         String    @id @default(uuid()) @db.Uuid
+  categoryId String    @map("category_id") @db.Uuid
+  text       String    @db.VarChar(500)
+  checked    Boolean   @default(false)
+  note       String?
+  dueDate    DateTime? @map("due_date") @db.Date
+  position   Int       @default(0)
+  category   Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@map("items")
+}
