@@ -1,0 +1,13 @@
+{
+  "id": "voyage-etranger",
+  "name": "Voyage à l'étranger",
+  "categories": [
+    {"name": "Documents", "icon": "📄", "items": ["Passeport", "Carte d'identité", "Billets d'avion/train", "Assurance voyage", "Permis de conduire"]},
+    {"name": "Hébergement", "icon": "🏨", "items": ["Confirmation de réservation", "Adresse de l'hôtel", "Horaires check-in/check-out"]},
+    {"name": "Bagages", "icon": "🧳", "items": ["Vêtements", "Trousse de toilette", "Chargeurs", "Adaptateur de prise", "Médicaments"]},
+    {"name": "Santé", "icon": "🏥", "items": ["Vaccins à jour", "Trousse de secours", "Ordonnances", "Carte européenne d'assurance maladie"]},
+    {"name": "Transport", "icon": "🚗", "items": ["Location de voiture", "Transfert aéroport", "Carte de transport local"]},
+    {"name": "Activités", "icon": "🎯", "items": ["Réservations excursions", "Billets musées/parcs", "Restaurants repérés"]},
+    {"name": "Formalités internationales", "icon": "🌍", "items": ["Visa", "Change de devises", "Photocopies des documents", "Traductions utiles", "Numéros d'urgence locaux", "Ambassade/consulat"]}
+  ]
+}
