@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { prisma } from "@/lib/prisma";
 
-const BASE_URL = "http://localhost:3000";
+const BASE_URL = "http://127.0.0.1:3001";
 
 async function api(path: string, options?: RequestInit) {
   const res = await fetch(`${BASE_URL}${path}`, {
@@ -83,5 +83,54 @@ describe("PATCH /api/checklists/[token]", () => {
     });
     expect(status).toBe(200);
     expect(body.title).toBe("New Title");
+  });
+});
+
+describe("PATCH /api/checklists/[token]/reorder", () => {
+  it("reorders categories", async () => {
+    const { body: checklist } = await api("/api/checklists", {
+      method: "POST",
+      body: JSON.stringify({ title: "Test", templateId: "vacances-classiques" }),
+    });
+
+    const categories = checklist.categories;
+    const reversed = categories.map((c: any, i: number) => ({
+      id: c.id,
+      position: categories.length - 1 - i,
+    }));
+
+    const { status } = await api(`/api/checklists/${checklist.shareToken}/reorder`, {
+      method: "PATCH",
+      body: JSON.stringify({ categories: reversed }),
+    });
+    expect(status).toBe(200);
+
+    const { body: updated } = await api(`/api/checklists/${checklist.shareToken}`);
+    expect(updated.categories[0].id).toBe(categories[categories.length - 1].id);
+  });
+
+  it("reorders items across categories", async () => {
+    const { body: checklist } = await api("/api/checklists", {
+      method: "POST",
+      body: JSON.stringify({ title: "Test", templateId: "vacances-classiques" }),
+    });
+
+    const firstCategory = checklist.categories[0];
+    const secondCategory = checklist.categories[1];
+    const movedItem = firstCategory.items[0];
+
+    const { status } = await api(`/api/checklists/${checklist.shareToken}/reorder`, {
+      method: "PATCH",
+      body: JSON.stringify({
+        items: [{ id: movedItem.id, categoryId: secondCategory.id, position: 0 }],
+      }),
+    });
+    expect(status).toBe(200);
+
+    const { body: updated } = await api(`/api/checklists/${checklist.shareToken}`);
+    const movedItemInSecond = updated.categories[1].items.find(
+      (i: any) => i.id === movedItem.id
+    );
+    expect(movedItemInSecond).toBeTruthy();
   });
 });
