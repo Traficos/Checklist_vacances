@@ -201,17 +201,17 @@ export function ChecklistView({ initialData }: Props) {
       movedItem.categoryId = destination.droppableId;
       newCategories[destCatIndex].items.splice(destination.index, 0, movedItem);
 
-      newCategories[sourceCatIndex].items.forEach((item: any, i: number) => { item.position = i; });
-      newCategories[destCatIndex].items.forEach((item: any, i: number) => { item.position = i; });
+      newCategories[sourceCatIndex].items.forEach((item: Item, i: number) => { item.position = i; });
+      newCategories[destCatIndex].items.forEach((item: Item, i: number) => { item.position = i; });
 
       setChecklist((prev) => ({ ...prev, categories: newCategories }));
 
       const itemUpdates = [
-        ...newCategories[sourceCatIndex].items.map((item: any) => ({
+        ...newCategories[sourceCatIndex].items.map((item: Item) => ({
           id: item.id, categoryId: newCategories[sourceCatIndex].id, position: item.position,
         })),
         ...(sourceCatIndex !== destCatIndex
-          ? newCategories[destCatIndex].items.map((item: any) => ({
+          ? newCategories[destCatIndex].items.map((item: Item) => ({
               id: item.id, categoryId: newCategories[destCatIndex].id, position: item.position,
             }))
           : []),

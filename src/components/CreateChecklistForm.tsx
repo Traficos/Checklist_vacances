@@ -53,7 +53,7 @@ export function CreateChecklistForm() {
 
       <div>
         <label htmlFor="template" className="block text-sm font-semibold text-gray-700 mb-1">
-          Partir d'un template
+          Partir d&apos;un template
         </label>
         <select
           id="template"

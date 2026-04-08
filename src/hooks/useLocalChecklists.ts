@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 
 interface LocalChecklist {
   token: string;
@@ -11,15 +11,14 @@ interface LocalChecklist {
 const STORAGE_KEY = "vacacheck-recent";
 const MAX_ENTRIES = 10;
 
-export function useLocalChecklists() {
-  const [checklists, setChecklists] = useState<LocalChecklist[]>([]);
+function getStored(): LocalChecklist[] {
+  if (typeof window === "undefined") return [];
+  const stored = localStorage.getItem(STORAGE_KEY);
+  return stored ? JSON.parse(stored) : [];
+}
 
-  useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      setChecklists(JSON.parse(stored));
-    }
-  }, []);
+export function useLocalChecklists() {
+  const [checklists, setChecklists] = useState<LocalChecklist[]>(getStored);
 
   const save = useCallback((token: string, title: string) => {
     setChecklists((prev) => {

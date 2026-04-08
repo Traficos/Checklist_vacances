@@ -25,7 +25,8 @@ interface Category {
 
 interface Props {
   category: Category;
-  dragHandleProps?: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  dragHandleProps?: Record<string, any> | null;
   onToggleItem: (id: string, checked: boolean) => void;
   onAddItem: (categoryId: string, text: string) => void;
   onUpdateItem: (id: string, data: Partial<Item>) => void;

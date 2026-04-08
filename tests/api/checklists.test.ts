@@ -94,7 +94,7 @@ describe("PATCH /api/checklists/[token]/reorder", () => {
     });
 
     const categories = checklist.categories;
-    const reversed = categories.map((c: any, i: number) => ({
+    const reversed = categories.map((c: { id: string }, i: number) => ({
       id: c.id,
       position: categories.length - 1 - i,
     }));
@@ -129,7 +129,7 @@ describe("PATCH /api/checklists/[token]/reorder", () => {
 
     const { body: updated } = await api(`/api/checklists/${checklist.shareToken}`);
     const movedItemInSecond = updated.categories[1].items.find(
-      (i: any) => i.id === movedItem.id
+      (i: { id: string }) => i.id === movedItem.id
     );
     expect(movedItemInSecond).toBeTruthy();
   });
