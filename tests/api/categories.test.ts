@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { prisma } from "@/lib/prisma";
 
-const BASE_URL = "http://127.0.0.1:3001";
+const BASE_URL = "http://127.0.0.1:3003";
 
 async function api(path: string, options?: RequestInit) {
   const res = await fetch(`${BASE_URL}${path}`, {
