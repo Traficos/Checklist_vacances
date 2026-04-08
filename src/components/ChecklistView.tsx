@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
 import { ProgressBar } from "./ProgressBar";
 import { CategoryCard } from "./CategoryCard";
 import { ToastContainer } from "./Toast";
@@ -170,6 +171,59 @@ export function ChecklistView({ initialData }: Props) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [checklist.shareToken]);
 
+  async function handleDragEnd(result: DropResult) {
+    const { source, destination, type } = result;
+    if (!destination) return;
+    if (source.droppableId === destination.droppableId && source.index === destination.index) return;
+
+    if (type === "category") {
+      const reordered = Array.from(checklist.categories);
+      const [moved] = reordered.splice(source.index, 1);
+      reordered.splice(destination.index, 0, moved);
+      const updated = reordered.map((c, i) => ({ ...c, position: i }));
+
+      setChecklist((prev) => ({ ...prev, categories: updated }));
+
+      await apiFetch(`/api/checklists/${checklist.shareToken}/reorder`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          categories: updated.map((c) => ({ id: c.id, position: c.position })),
+        }),
+      });
+    }
+
+    if (type === "item") {
+      const sourceCatIndex = checklist.categories.findIndex((c) => c.id === source.droppableId);
+      const destCatIndex = checklist.categories.findIndex((c) => c.id === destination.droppableId);
+
+      const newCategories = JSON.parse(JSON.stringify(checklist.categories));
+      const [movedItem] = newCategories[sourceCatIndex].items.splice(source.index, 1);
+      movedItem.categoryId = destination.droppableId;
+      newCategories[destCatIndex].items.splice(destination.index, 0, movedItem);
+
+      newCategories[sourceCatIndex].items.forEach((item: any, i: number) => { item.position = i; });
+      newCategories[destCatIndex].items.forEach((item: any, i: number) => { item.position = i; });
+
+      setChecklist((prev) => ({ ...prev, categories: newCategories }));
+
+      const itemUpdates = [
+        ...newCategories[sourceCatIndex].items.map((item: any) => ({
+          id: item.id, categoryId: newCategories[sourceCatIndex].id, position: item.position,
+        })),
+        ...(sourceCatIndex !== destCatIndex
+          ? newCategories[destCatIndex].items.map((item: any) => ({
+              id: item.id, categoryId: newCategories[destCatIndex].id, position: item.position,
+            }))
+          : []),
+      ];
+
+      await apiFetch(`/api/checklists/${checklist.shareToken}/reorder`, {
+        method: "PATCH",
+        body: JSON.stringify({ items: itemUpdates }),
+      });
+    }
+  }
+
   function handleCopyLink() {
     navigator.clipboard.writeText(window.location.href);
     setCopied(true);
@@ -211,20 +265,33 @@ export function ChecklistView({ initialData }: Props) {
       <ProgressBar checked={checkedItems} total={totalItems} className="mb-8" />
 
       {/* Categories */}
-      <div className="space-y-6">
-        {checklist.categories.map((category) => (
-          <CategoryCard
-            key={category.id}
-            category={category}
-            onToggleItem={handleToggleItem}
-            onAddItem={handleAddItem}
-            onUpdateItem={handleUpdateItem}
-            onDeleteItem={handleDeleteItem}
-            onDeleteCategory={handleDeleteCategory}
-            onUpdateCategory={handleUpdateCategory}
-          />
-        ))}
-      </div>
+      <DragDropContext onDragEnd={handleDragEnd}>
+        <Droppable droppableId="categories" type="category">
+          {(provided) => (
+            <div ref={provided.innerRef} {...provided.droppableProps} className="space-y-6">
+              {checklist.categories.map((category, index) => (
+                <Draggable key={category.id} draggableId={category.id} index={index}>
+                  {(provided) => (
+                    <div ref={provided.innerRef} {...provided.draggableProps}>
+                      <CategoryCard
+                        category={category}
+                        dragHandleProps={provided.dragHandleProps}
+                        onToggleItem={handleToggleItem}
+                        onAddItem={handleAddItem}
+                        onUpdateItem={handleUpdateItem}
+                        onDeleteItem={handleDeleteItem}
+                        onDeleteCategory={handleDeleteCategory}
+                        onUpdateCategory={handleUpdateCategory}
+                      />
+                    </div>
+                  )}
+                </Draggable>
+              ))}
+              {provided.placeholder}
+            </div>
+          )}
+        </Droppable>
+      </DragDropContext>
 
       {/* Add category */}
       <AddCategoryButton onAdd={handleAddCategory} />

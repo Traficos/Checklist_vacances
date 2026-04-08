@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Droppable, Draggable } from "@hello-pangea/dnd";
 import { ChecklistItem } from "./ChecklistItem";
 import { ProgressBar } from "./ProgressBar";
 
@@ -84,11 +85,27 @@ export function CategoryCard({
       <ProgressBar checked={checkedCount} total={category.items.length} className="mb-4" />
 
       {/* Items */}
-      <div className="space-y-2">
-        {category.items.map((item) => (
-          <ChecklistItem key={item.id} item={item} onToggle={onToggleItem} onUpdate={onUpdateItem} onDelete={onDeleteItem} />
-        ))}
-      </div>
+      <Droppable droppableId={category.id} type="item">
+        {(provided) => (
+          <div ref={provided.innerRef} {...provided.droppableProps} className="space-y-2">
+            {category.items.map((item, index) => (
+              <Draggable key={item.id} draggableId={item.id} index={index}>
+                {(provided) => (
+                  <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
+                    <ChecklistItem
+                      item={item}
+                      onToggle={onToggleItem}
+                      onUpdate={onUpdateItem}
+                      onDelete={onDeleteItem}
+                    />
+                  </div>
+                )}
+              </Draggable>
+            ))}
+            {provided.placeholder}
+          </div>
+        )}
+      </Droppable>
 
       {/* Add item form */}
       <form onSubmit={handleAddItem} className="mt-3 flex gap-2">
