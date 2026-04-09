@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
+
+type TransactionClient = Prisma.TransactionClient;
 
 export async function PATCH(
   request: NextRequest,
@@ -16,7 +19,7 @@ export async function PATCH(
     return NextResponse.json({ error: "Checklist not found" }, { status: 404 });
   }
 
-  await prisma.$transaction(async (tx) => {
+  await prisma.$transaction(async (tx: TransactionClient) => {
     if (body.categories) {
       for (const cat of body.categories) {
         await tx.category.update({
