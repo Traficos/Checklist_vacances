@@ -9,6 +9,7 @@ export function CreateChecklistForm() {
   const [title, setTitle] = useState("");
   const [templateId, setTemplateId] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const router = useRouter();
   const { save } = useLocalChecklists();
   const templates = getTemplates();
@@ -18,8 +19,9 @@ export function CreateChecklistForm() {
     if (!title.trim()) return;
 
     setLoading(true);
+    setError("");
     try {
-      const res = await fetch("/api/checklists", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/api/checklists`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -27,10 +29,15 @@ export function CreateChecklistForm() {
           templateId: templateId || undefined,
         }),
       });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => null);
+        throw new Error(errData?.error || `Erreur serveur (${res.status})`);
+      }
       const data = await res.json();
       save(data.shareToken, data.title);
       router.push(`/c/${data.shareToken}`);
-    } catch {
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Impossible de créer la checklist. Vérifiez votre connexion.");
       setLoading(false);
     }
   }
@@ -69,6 +76,10 @@ export function CreateChecklistForm() {
           ))}
         </select>
       </div>
+
+      {error && (
+        <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>
+      )}
 
       <button
         type="submit"

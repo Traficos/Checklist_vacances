@@ -56,7 +56,8 @@ export function ChecklistView({ initialData }: Props) {
   );
 
   async function apiFetch(path: string, options?: RequestInit) {
-    const res = await fetch(path, {
+    const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
+    const res = await fetch(`${basePath}${path}`, {
       headers: { "Content-Type": "application/json" },
       ...options,
     });
